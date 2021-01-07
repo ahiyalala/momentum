@@ -67,3 +67,9 @@ export interface TaskOverview {
   taskName: string;
   totalElapsed: number;
 }
+
+export interface TaskHistory {
+  endTime: Date;
+  startTime: Date;
+  elapsed: number;
+}

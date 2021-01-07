@@ -124,4 +124,19 @@ export default class DatabaseAPI {
       });
     });
   };
+
+  getTaskHistory = (taskId: any, callback: any) => {
+    const getHistory = `SELECT * FROM progress WHERE taskId = ${taskId} ORDER BY startTime`;
+
+    this.db.transaction((tx) => {
+      tx.executeSql(
+        getHistory,
+        [],
+        (_tx, { rows: { item, length, _array } }) => {
+          console.log(_array);
+          callback(_array);
+        }
+      );
+    });
+  };
 }

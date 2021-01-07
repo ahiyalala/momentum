@@ -6,10 +6,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { ITask } from "../intrerfaces";
 import { Lato_400Regular } from "@expo-google-fonts/lato";
 import { Shadowing } from "../styles.global";
-
-const pluralize = (str: string, val: number) => {
-  return val == 1 ? `${str}` : `${str}s`;
-};
+import { pluralize } from "../lib/helper";
 
 export const Task = (task: ITask) => {
   const { name, totalSeconds, onPress } = task;

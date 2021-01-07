@@ -26,9 +26,7 @@ export const TaskOverviewPage = () => {
             id={task.taskId}
             name={task.taskName}
             totalSeconds={task.totalElapsed}
-            onPress={() =>
-              navigation.navigate("TaskDetails", { id: task.taskId })
-            }
+            onPress={() => navigation.navigate("TaskDetails", { task: task })}
           />
         );
       })}
