@@ -9,10 +9,17 @@ export default class DatabaseAPI {
     this.db = SQLite.openDatabase("tymbox");
   }
 
+  dropTables = () => {
+    this.db.transaction((tx) => {
+      tx.executeSql(`DROP TABLE tasks`);
+      tx.executeSql(`DROP TABLE progress`);
+    });
+  };
+
   loadDb = () => {
     this.db.transaction((tx) => {
       tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS tasks (taskId INTEGER PRIMARY KEY AUTOINCREMENT, taskName TEXT NOT NULL, taskDescription TEXT NOT NULL, totalElapsed INTEGER NOT NULL);`
+        `CREATE TABLE IF NOT EXISTS tasks (taskId INTEGER PRIMARY KEY AUTOINCREMENT, taskName TEXT NOT NULL, taskDescription TEXT NOT NULL, totalElapsed INTEGER NOT NULL, lastUpdated TEXT NOT NULL);`
       );
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS progress (progressId INTEGER PRIMARY KEY AUTOINCREMENT, taskId INTEGER NOT NULL, startTime TEXT NOT NULL, endTime TEXT NOT NULL, elapsed INTEGER NOT NULL);`
@@ -28,26 +35,28 @@ export default class DatabaseAPI {
     elapsed,
     callback,
   }: AddTaskParam) => {
-    const taskQuery = `INSERT INTO tasks (taskName, taskDescription, totalElapsed) VALUES (?,?,?);`;
-    const progressQuery = `INSERT INTO progress (taskId, startTime, endTime, elapsed) VALUES (?,${startTime},${endTime},${elapsed});`;
+    const taskQuery = `INSERT INTO tasks (taskName, taskDescription, totalElapsed, lastUpdated) VALUES ('${taskName}','${taskDescription}','${elapsed}','${endTime}');`;
+    const progressQuery = `INSERT INTO progress (taskId, startTime, endTime, elapsed) VALUES (?,?,?,?);`;
     this.db.transaction((tx) => {
       tx.executeSql(
         taskQuery,
-        [taskName, taskDescription, elapsed],
+        [],
         (_tx, { insertId }) => {
           _tx.executeSql(
             progressQuery,
-            [insertId],
+            [insertId, startTime, endTime, elapsed],
             (ts) => {
               callback(true);
             },
             (__tx, err) => {
+              console.log(err);
               callback(false);
               return true;
             }
           );
         },
         (_tx, err) => {
+          console.log(err);
           callback(false);
           return false;
         }
@@ -76,7 +85,7 @@ export default class DatabaseAPI {
       29,
       0
     ).toISOString();
-    const getTasks = `SELECT DISTINCT t.taskId, taskName, taskDescription, totalElapsed, datetime(p.starttime,'localtime') as localstarttime FROM tasks as t LEFT JOIN progress as p ON t.taskId = p.taskId;`;
+    const getTasks = `SELECT DISTINCT taskId, taskName, taskDescription, totalElapsed, datetime(lastupdated,'localtime') as localstarttime FROM tasks ORDER BY lastupdated DESC LIMIT 10`;
 
     this.db.transaction((tx) => {
       tx.executeSql(getTasks, [], (_tx, { rows: { item, length, _array } }) => {
@@ -106,12 +115,20 @@ export default class DatabaseAPI {
       29,
       0
     ).toISOString();
-    const getTasks = `SELECT DISTINCT t.taskId, taskName, taskDescription, totalElapsed, datetime(p.starttime,'localtime') as localstarttime FROM tasks as t LEFT JOIN progress as p ON t.taskId = p.taskId WHERE localstarttime > JulianDay('${_todayStart}')`;
+    const getTasks = `SELECT DISTINCT taskId, taskName, taskDescription, totalElapsed, datetime(lastupdated,'localtime') as localstarttime FROM tasks WHERE datetime(lastUpdated,'localtime') > JulianDay('${_todayStart}') ORDER BY lastupdated DESC`;
 
     this.db.transaction((tx) => {
-      tx.executeSql(getTasks, [], (_tx, { rows: { item, length, _array } }) => {
-        callback(_array);
-      });
+      tx.executeSql(
+        getTasks,
+        [],
+        (_tx, { rows: { item, length, _array } }) => {
+          callback(_array);
+        },
+        (_tx, err) => {
+          console.log(err);
+          return false;
+        }
+      );
     });
   };
 
@@ -138,7 +155,7 @@ export default class DatabaseAPI {
   }: any) => {
     const addProgress = `INSERT INTO progress (taskId, startTime, endTime, elapsed) VALUES (?,?,?,?)`;
     const getTotalElapsed = `SELECT totalElapsed FROM tasks WHERE taskId = ${taskId} LIMIT 1`;
-    const addTotalElapsed = `UPDATE tasks SET totalElapsed = ? WHERE taskId = ?`;
+    const addTotalElapsed = `UPDATE tasks SET totalElapsed = ?, lastUpdated = ? WHERE taskId = ?`;
 
     const errCallback = (_tx_, err) => {
       callback(false);
@@ -159,7 +176,7 @@ export default class DatabaseAPI {
                 parseInt(_array[0].totalElapsed) + parseInt(elapsed);
               __tx.executeSql(
                 addTotalElapsed,
-                [totalElapsed, taskId],
+                [totalElapsed, endTime, taskId],
                 (___tx) => {
                   callback(true);
                 },
