@@ -16,6 +16,7 @@ import { AppLoading } from "expo";
 import { TaskOverview } from "../intrerfaces";
 import { Ionicons } from "@expo/vector-icons";
 import { IconButton } from "../components/buttons";
+import { useFocusEffect } from "@react-navigation/native";
 let sampleData = [
   {
     seriesName: "series1",
@@ -35,14 +36,15 @@ let sampleData = [
 const Home = ({ navigation }: any) => {
   const [tasksToday, getTasks] = React.useState([] as TaskOverview[]);
 
-  React.useEffect(() => {
-    const db = new DatabaseAPI();
-    db.getTasksToday((res: any) => {
-      getTasks(res);
-    });
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      const db = new DatabaseAPI();
+      db.getTasksToday((res: any) => {
+        getTasks(res);
+      });
+    }, [])
+  );
 
-  console.log(tasksToday);
   return (
     <SafeAreaView style={[Layout.outerBox, { flex: 1, paddingBottom: 70 }]}>
       <ScrollView
@@ -91,20 +93,23 @@ const Home = ({ navigation }: any) => {
                 name={task.taskName}
                 totalSeconds={task.totalElapsed}
                 onPress={() =>
-                  navigation.navigate("TaskDetails", { id: task.taskId })
+                  navigation.navigate("TaskDetails", { task: task })
                 }
               />
             );
           })}
         </View>
-        <Text style={[Typography.h4]}>What you did yesterday:</Text>
+        <Text style={[Typography.h4]}>What you did yesterday</Text>
         <View style={{ marginHorizontal: 4, marginBottom: 24 }}>
-          <Task
-            id={2}
-            name="Test"
-            totalSeconds={50}
-            onPress={() => navigation.navigate("TaskDetails", { id: 2 })}
-          />
+          <Text
+            style={{
+              color: "#a2a2a2",
+              textAlign: "center",
+              marginVertical: 16,
+            }}
+          >
+            No tasks today
+          </Text>
         </View>
       </ScrollView>
       <View

@@ -3,7 +3,7 @@ import React, { createRef, useEffect, useRef, useState } from "react";
 import { colorScheme, Typography } from "../styles.global";
 import { NormalButton, PillButton } from "../components/buttons";
 import { TipText } from "../components/assistance";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const isWhiteSpace = (str: string) => {
   return !/\S/.test(str);
@@ -35,18 +35,31 @@ const formatOnBlur = (value: string, callback: Function) => {
   callback(val.toString().padStart(2, "0"));
 };
 
+const extractParameters = (params: any) => {
+  if (params) return params;
+
+  return {
+    id: null,
+    name: null,
+    description: null,
+  };
+};
+
 export const NewTask = () => {
+  const route = useRoute();
+  const { id, name, description } = extractParameters(route.params);
   const [isMomentum, switchMode] = useState(true);
   const [momentumMinutes, setMomentumMinutes] = useState("0");
   const [timeboxHours, setTimeboxHours] = useState("00");
   const [timeboxMinutes, setTimeboxMinutes] = useState("00");
   const [timeboxSeconds, setTimeboxSeconds] = useState("00");
-  const [taskName, setTaskName] = useState("");
-  const [taskDescription, setTaskDescription] = useState("");
+  const [taskName, setTaskName] = useState(name ? name : ("" as string));
+  const [taskDescription, setTaskDescription] = useState(
+    description ? description : ("" as string)
+  );
   const [isSubmitted, setSubmissionState] = useState(false);
   const navigation = useNavigation();
   const taskNameRef = useRef(null);
-
   const hasTaskDetails = (): boolean => {
     setSubmissionState(true);
     return !isWhiteSpace(taskName);
@@ -61,6 +74,7 @@ export const NewTask = () => {
     if (isMomentum) {
       if (parseInt(momentumMinutes) > 0) {
         navigation.navigate("Momentum", {
+          taskId: id,
           momentumMinutes: momentumMinutes,
           taskName: taskName,
           taskDescription: taskDescription,
@@ -141,6 +155,7 @@ export const NewTask = () => {
               ? "red"
               : colorScheme.main.color
           }
+          editable={id == null}
         />
         <TextInput
           placeholder="Task description (optional)"
@@ -152,6 +167,7 @@ export const NewTask = () => {
           textAlignVertical="top"
           maxLength={256}
           multiline={true}
+          editable={id == null}
         />
       </View>
       <View style={{ flexDirection: "row", justifyContent: "center" }}>

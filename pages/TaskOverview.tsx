@@ -25,6 +25,7 @@ export const TaskOverviewPage = () => {
             key={index}
             id={task.taskId}
             name={task.taskName}
+            description={task.taskDescription}
             totalSeconds={task.totalElapsed}
             onPress={() => navigation.navigate("TaskDetails", { task: task })}
           />

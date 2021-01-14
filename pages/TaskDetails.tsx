@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { AddNewTask } from "../components/addButton";
 import { IconButton } from "../components/buttons";
@@ -13,6 +14,7 @@ export const TaskDetails = ({ route, navigation }: any) => {
   const { task } = route.params;
   const { taskId, taskName, taskDescription, totalElapsed } = task;
   const [history, populateHistory] = useState([] as TaskHistory[]);
+  const navigate = useNavigation();
 
   const totalTime = secondsToTime(totalElapsed);
 
@@ -20,6 +22,25 @@ export const TaskDetails = ({ route, navigation }: any) => {
     const db = new DatabaseAPI();
     db.getTaskHistory(taskId, (val: any) => populateHistory(val));
   }, []);
+
+  const deleteTask = () => {
+    Alert.alert(`Deleting task`, "Are you sure about this?", [
+      { text: "No" },
+      {
+        text: "Yes",
+        onPress: () => {
+          const db = new DatabaseAPI();
+          db.deleteTask(taskId, (val: any) => {
+            if (!val) {
+              alert("Something went wrong, please contact the developer.");
+              return;
+            }
+            navigate.goBack();
+          });
+        },
+      },
+    ]);
+  };
 
   return (
     <View>
@@ -37,29 +58,77 @@ export const TaskDetails = ({ route, navigation }: any) => {
         <Text style={{ marginBottom: 16 }}>
           {taskDescription ? taskDescription : "No description"}
         </Text>
-        <Text>Total time spent: {totalTime}</Text>
-      </View>
-      <View style={{ alignItems: "flex-end", position: "relative" }}>
-        <TouchableOpacity
-          style={[
-            { alignItems: "center", justifyContent: "center" },
-            {
-              backgroundColor: colorScheme.main.color,
-              width: 60,
-              height: 60,
-              borderRadius: 100,
-              marginHorizontal: 16,
-              marginRight: 32,
-              position: "absolute",
-              top: -32,
-              right: 16,
-            },
-          ]}
-          activeOpacity={0.7}
-          onPress={() => console.log("Dong")}
+        <Text style={{ marginBottom: 32 }}>Total time spent: {totalTime}</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+          }}
         >
-          <Ionicons name="md-add" size={40} color="white" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              {
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+              },
+              {
+                backgroundColor: colorScheme.main.color,
+                marginRight: 16,
+                paddingVertical: 8,
+                paddingHorizontal: 32,
+                borderRadius: 30,
+              },
+            ]}
+            activeOpacity={0.7}
+            onPress={() =>
+              navigate.navigate("NewTask", {
+                id: taskId,
+                name: taskName,
+                description: taskDescription,
+              })
+            }
+          >
+            <Ionicons
+              name="md-add"
+              size={28}
+              color="white"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={{ fontSize: 16, color: "white", fontWeight: "bold" }}>
+              Add progress
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              {
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+              },
+              {
+                paddingHorizontal: 16,
+              },
+            ]}
+            activeOpacity={0.7}
+            onPress={() => deleteTask()}
+          >
+            <Ionicons
+              name="md-trash"
+              size={16}
+              color={colorScheme.danger.color}
+              style={{ marginRight: 8 }}
+            />
+            <Text
+              style={{
+                fontSize: 16,
+                color: colorScheme.danger.color,
+              }}
+            >
+              Delete
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <ScrollView style={{ flexGrow: 1 }}>
         {history.map((timestamp, index: number) => {
@@ -74,6 +143,7 @@ export const TaskDetails = ({ route, navigation }: any) => {
                 borderBottomColor: "#ccc",
                 borderBottomWidth: 1,
               }}
+              key={index}
             >
               <Text
                 style={[{ marginBottom: 8, fontSize: 20, fontWeight: "bold" }]}

@@ -13,7 +13,12 @@ export const Momentum = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [startTimeObj, setStartTime] = useState(new Date());
-  const { momentumMinutes, taskName, taskDescription } = route.params as any;
+  const {
+    momentumMinutes,
+    taskName,
+    taskDescription,
+    taskId,
+  } = route.params as any;
   const [elapsed, setElapsed] = useState(0);
   const [isActive, setActive] = useState(true);
 
@@ -52,7 +57,7 @@ export const Momentum = () => {
 
     const callback = (res: boolean) => {
       if (res) {
-        alert("New task added!");
+        alert(`New ${taskId == null ? "task" : "progress"} added!`);
         navigation.navigate("Home");
       } else {
         alert(
@@ -64,12 +69,24 @@ export const Momentum = () => {
     const db = new DatabaseAPI();
     const endTime = new Date().toISOString();
     const startTime = startTimeObj.toISOString();
+    const _elapsed = parseInt((elapsed / 1000).toString());
+    if (taskId != null) {
+      db.addNewProgressToTask({
+        taskId,
+        startTime,
+        endTime,
+        elapsed: _elapsed,
+        callback,
+      });
+      return;
+    }
+
     db.addNewTask({
       taskName,
       taskDescription,
       startTime,
       endTime,
-      elapsed: parseInt((elapsed / 1000).toString()),
+      elapsed: _elapsed,
       callback,
     } as AddTaskParam);
   };
