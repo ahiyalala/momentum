@@ -4,6 +4,9 @@ import { MomentumTimerProps } from "../intrerfaces";
 import { buttons, colorScheme } from "../styles.global";
 import { Audio } from "expo-av";
 import DatabaseAPI from "../lib/db";
+import { AppState } from "react-native";
+import App from "../App";
+import * as Notifications from "expo-notifications";
 
 export default function Timer(props: MomentumTimerProps) {
   const { minutes, onTimePass, style, onStateChange } = props;
@@ -122,6 +125,29 @@ export default function Timer(props: MomentumTimerProps) {
       setFlicker(0);
     }
   }, [flick]);
+
+  React.useEffect(() => {
+    const stopOnBg = async () => {
+      if (AppState.currentState == "background") {
+        setTimerObj({
+          isActive: false,
+          startTime: timerObj.startTime,
+          storedElapsed: timerObj.storedElapsed + elapsed,
+        });
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Momentum is paused",
+            body: "Tap here to return",
+          },
+          trigger: null,
+        });
+      }
+    };
+    AppState.addEventListener("change", stopOnBg);
+    return () => {
+      AppState.removeEventListener("change", stopOnBg);
+    };
+  });
 
   return (
     <View style={style}>

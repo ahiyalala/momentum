@@ -13,3 +13,7 @@ export const secondsToTime = (totalSeconds: number) => {
     seconds > 0 ? `${seconds} ${pluralize("second", seconds)}` : ``;
   return `${hourStr}${minuteStr}${secondStr}`;
 };
+
+export const secondsToMinutes = (totalSeconds: number) => {
+  return parseFloat((totalSeconds / 60).toFixed(2));
+};

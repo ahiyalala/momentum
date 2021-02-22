@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { buttons, colorScheme } from "../styles.global";
 import { Ionicons } from "@expo/vector-icons";
@@ -40,6 +40,46 @@ export const PillButton = (props: any) => {
         </Text>
       </View>
     </TouchableOpacity>
+  );
+};
+
+export const PillButtonWithIcon = ({
+  onPress,
+  text,
+  icon,
+  color,
+  style,
+}: any) => {
+  return (
+    <Pressable
+      style={[
+        style,
+        {
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+        },
+        {
+          backgroundColor: color ? color : colorScheme.main.color,
+          marginRight: 16,
+          paddingVertical: 8,
+          paddingHorizontal: 32,
+          borderRadius: 30,
+        },
+      ]}
+      activeOpacity={0.7}
+      onPress={onPress}
+    >
+      <Ionicons
+        name={icon}
+        size={28}
+        color="white"
+        style={{ marginRight: 8 }}
+      />
+      <Text style={{ fontSize: 16, color: "white", fontWeight: "bold" }}>
+        {text}
+      </Text>
+    </Pressable>
   );
 };
 
@@ -85,9 +125,9 @@ export const NormalButton = ({ onPress, text, icon, style, disabled }: any) => {
   );
 };
 
-export const IconButton = ({ icon, text, onPress }: any) => {
+export const IconButton = ({ icon, text, onPress, style }: any) => {
   return (
-    <View style={{ width: 40, marginHorizontal: 16 }}>
+    <View style={[{ width: 40, marginHorizontal: 16 }, style]}>
       <TouchableOpacity style={{ alignItems: "center" }} onPress={onPress}>
         <Ionicons name={icon} size={24} color={"#a2a2a2"} />
         <Text style={{ color: "#a2a2a2", fontSize: 12 }}>{text}</Text>

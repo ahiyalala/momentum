@@ -9,7 +9,7 @@ import { Shadowing } from "../styles.global";
 import { pluralize, secondsToTime } from "../lib/helper";
 
 export const Task = (task: ITask) => {
-  const { name, totalSeconds, onPress, description } = task;
+  const { name, totalSeconds, onPress, description, lastUpdate } = task;
   const minutes = parseInt((totalSeconds / 60).toString());
   const seconds = totalSeconds % 60;
 
@@ -34,7 +34,8 @@ export const Task = (task: ITask) => {
           {description ? description : "No description available"}
         </Text>
         <Text style={{ fontSize: 12, color: "#91a3b0" }}>
-          Total time spent: {elapsedString}
+          Spent: {elapsedString}{" "}
+          {lastUpdate ? `| Last Updated: ${lastUpdate}` : ""}
         </Text>
       </TouchableOpacity>
     </View>

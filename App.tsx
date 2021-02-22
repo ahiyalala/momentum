@@ -14,6 +14,7 @@ import { Timebox } from "./pages/Timebox";
 import * as SQLite from "expo-sqlite";
 import DatabaseAPI from "./lib/db";
 import { TaskOverview, TaskOverviewPage } from "./pages/TaskOverview";
+import * as Notifications from "expo-notifications";
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,15 @@ export default function App() {
   React.useEffect(() => {
     const db = new DatabaseAPI();
     db.loadDb();
+    Notifications.setNotificationHandler({
+      handleNotification: async () => {
+        return {
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        };
+      },
+    });
   }, []);
 
   if (!fontsLoaded) {

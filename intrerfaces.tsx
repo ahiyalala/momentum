@@ -12,6 +12,7 @@ export interface ITask extends Basic {
   description?: string;
   totalSeconds: number;
   timestamps?: Timestamp[];
+  lastUpdate?: string;
   onPress?: any;
 }
 
@@ -72,4 +73,9 @@ export interface TaskHistory {
   endTime: Date;
   startTime: Date;
   elapsed: number;
+}
+
+export interface GraphData {
+  x: Date;
+  y: string;
 }

@@ -8,6 +8,7 @@ import { NormalButton } from "../components/buttons";
 import { useBackHandler } from "@react-native-community/hooks";
 import DatabaseAPI from "../lib/db";
 import { AddTaskParam } from "../intrerfaces";
+import { AdMobBanner } from "expo-ads-admob";
 
 export const Momentum = () => {
   const route = useRoute();
@@ -118,7 +119,10 @@ export const Momentum = () => {
           />
         </View>
         <View style={{ flex: 0.5 }}>
-          <Text>{elapsed}</Text>
+          <AdMobBanner
+            bannerSize="largeBanner"
+            adUnitID="ca-app-pub-3940256099942544/6300978111"
+          />
         </View>
       </View>
     </SafeAreaView>

@@ -94,28 +94,44 @@ export default class DatabaseAPI {
     });
   };
 
-  getTasksToday = (callback: any) => {
-    const _now = new Date();
+  getTaskByDate = (date: Date, callback: any) => {
+    const getTasks = `SELECT DISTINCT taskId, taskName, taskDescription, totalElapsed, datetime(lastupdated,'localtime') as localstarttime FROM tasks WHERE localstarttime BETWEEN datetime('${date.toISOString()}','localtime', 'start of day') AND datetime('${date.toISOString()}','+1 day','localtime', 'start of day') ORDER BY lastupdated DESC LIMIT 10`;
 
-    const _todayStart = new Date(
-      _now.getFullYear(),
-      _now.getMonth(),
-      _now.getDate(),
-      0,
-      0,
-      0,
-      0
-    ).toISOString();
-    const _todayEnd = new Date(
-      _now.getFullYear(),
-      _now.getMonth(),
-      _now.getDate(),
-      23,
-      59,
-      29,
-      0
-    ).toISOString();
-    const getTasks = `SELECT DISTINCT taskId, taskName, taskDescription, totalElapsed, datetime(lastupdated,'localtime') as localstarttime FROM tasks WHERE datetime(lastUpdated,'localtime') > JulianDay('${_todayStart}') ORDER BY lastupdated DESC`;
+    this.db.transaction((tx) => {
+      tx.executeSql(
+        getTasks,
+        [],
+        (_tx, { rows: { item, length, _array } }) => {
+          callback(_array);
+        },
+        (_tx, err) => {
+          console.log(err);
+          return false;
+        }
+      );
+    });
+  };
+
+  getTasksToday = (callback: any) => {
+    const getTasks = `SELECT DISTINCT taskId, taskName, taskDescription, totalElapsed, datetime(lastupdated,'localtime') as localstarttime FROM tasks WHERE localstarttime BETWEEN datetime('now','localtime', 'start of day') AND datetime('now','+1 day','localtime', 'start of day') ORDER BY lastupdated DESC`;
+
+    this.db.transaction((tx) => {
+      tx.executeSql(
+        getTasks,
+        [],
+        (_tx, { rows: { item, length, _array } }) => {
+          callback(_array);
+        },
+        (_tx, err) => {
+          console.log(err);
+          return false;
+        }
+      );
+    });
+  };
+
+  getTasksYesterday = (callback: any) => {
+    const getTasks = `SELECT DISTINCT taskId, taskName, taskDescription, totalElapsed, datetime(lastupdated,'localtime') as localstarttime FROM tasks WHERE localstarttime BETWEEN datetime('now','-1 day','localtime', 'start of day') AND datetime('now','localtime', 'start of day') ORDER BY lastupdated DESC`;
 
     this.db.transaction((tx) => {
       tx.executeSql(
@@ -141,6 +157,23 @@ export default class DatabaseAPI {
         [],
         (_tx, { rows: { item, length, _array } }) => {
           callback(_array);
+        }
+      );
+    });
+  };
+
+  getSumOfElapsedPerDay = (callback: any) => {
+    const getTotalElapsed = `SELECT DATE(endTime) as x, elapsed as y FROM progress WHERE x BETWEEN datetime('now','-1 day','localtime', 'start of day') AND datetime('now','localtime', 'start of day') GROUP BY x`;
+    this.db.transaction((tx) => {
+      tx.executeSql(
+        getTotalElapsed,
+        [],
+        (_tx, { rows: { _array } }) => {
+          callback(_array);
+        },
+        (_tx, err) => {
+          console.log(err.message);
+          return false;
         }
       );
     });

@@ -1,6 +1,11 @@
 import {
   ActivityIndicator,
+  Alert,
+  AppState,
+  Linking,
+  Modal,
   Platform,
+  Pressable,
   SafeAreaView,
   Text,
   View,
@@ -13,40 +18,95 @@ import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { AddNewTask } from "../components/addButton";
 import DatabaseAPI from "../lib/db";
 import { AppLoading } from "expo";
-import { TaskOverview } from "../intrerfaces";
+import { GraphData, TaskOverview } from "../intrerfaces";
 import { Ionicons } from "@expo/vector-icons";
 import { IconButton } from "../components/buttons";
 import { useFocusEffect } from "@react-navigation/native";
-let sampleData = [
-  {
-    seriesName: "series1",
-    data: [
-      { x: "12/11", y: parseInt((Math.random() * 100).toString()) },
-      { x: "12/12", y: parseInt((Math.random() * 100).toString()) },
-      { x: "12/13", y: parseInt((Math.random() * 100).toString()) },
-      { x: "12/14", y: parseInt((Math.random() * 100).toString()) },
-      { x: "12/15", y: parseInt((Math.random() * 100).toString()) },
-      { x: "12/16", y: parseInt((Math.random() * 100).toString()) },
-      { x: "12/17", y: parseInt((Math.random() * 100).toString()) },
-    ],
-    color: "#9966cc",
-  },
-];
+import App from "../App";
+import { MenuItem } from "../components/menuItem";
 
 const Home = ({ navigation }: any) => {
   const [tasksToday, getTasks] = React.useState([] as TaskOverview[]);
+  const [menuModal, setMenuModalVisibility] = React.useState(false);
+  const [tasksYesterday, getTasksFromYesterday] = React.useState(
+    [] as TaskOverview[]
+  );
+  const [graphData, getGraphData] = React.useState([] as GraphData[]);
 
   useFocusEffect(
     React.useCallback(() => {
       const db = new DatabaseAPI();
-      db.getTasksToday((res: any) => {
+      db.getTasksToday((res: TaskOverview[]) => {
         getTasks(res);
+      });
+      db.getTasksYesterday((res: TaskOverview[]) => {
+        getTasksFromYesterday(res);
+      });
+      db.getSumOfElapsedPerDay((res: GraphData[]) => {
+        getGraphData(res);
       });
     }, [])
   );
 
+  const openingUrl = (url: string) => {
+    Alert.alert(
+      "Exiting Momentum",
+      "You are visiting a page outside the app, do you want to continue?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => {},
+        },
+        {
+          text: "Proceed",
+          onPress: () => Linking.openURL(url),
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={[Layout.outerBox, { flex: 1, paddingBottom: 70 }]}>
+      <Modal animationType="slide" transparent={false} visible={menuModal}>
+        <View style={{ paddingHorizontal: 32, paddingTop: 48 }}>
+          <Pressable
+            onPress={() => setMenuModalVisibility(false)}
+            style={{
+              position: "absolute",
+              right: 32,
+              top: 32,
+              padding: 16,
+              zIndex: 2,
+            }}
+          >
+            <Ionicons name="md-close" color="#ccc" size={32} />
+          </Pressable>
+          <View style={{ marginBottom: 32 }}>
+            <Text style={[Typography.h2]}>Momentum</Text>
+            <Text style={[Typography.h4, colorScheme.disabled]}>v0.1.0</Text>
+          </View>
+          <View>
+            <MenuItem
+              onPress={() =>
+                openingUrl("https://chronolala.github.io/tymbox-static/")
+              }
+              title="Privacy Notice"
+            />
+            <MenuItem
+              onPress={() =>
+                openingUrl(
+                  "https://chronolala.github.io/tymbox-static/terms-and-condition"
+                )
+              }
+              title="Terms and Condition"
+            />
+            <MenuItem
+              onPress={() => openingUrl("mailto:chronolala.1994@gmail.com")}
+              title="Contact Us"
+            />
+          </View>
+        </View>
+      </Modal>
       <ScrollView
         style={{
           paddingHorizontal: Platform.OS == "ios" ? 16 : 0,
@@ -54,24 +114,6 @@ const Home = ({ navigation }: any) => {
         }}
       >
         <Text style={[Typography.h1, { marginBottom: 32 }]}>Welcome!</Text>
-        <Text style={[Typography.h4]}>Your week at a glance</Text>
-        <View
-          style={{
-            justifyContent: "center",
-            flexDirection: "row",
-            marginBottom: 16,
-          }}
-        >
-          <PureChart
-            data={sampleData}
-            type="line"
-            height={100}
-            defaultColumnWidth={10}
-            width={"100%"}
-            xAxisGridLineColor={"rgba(0,0,0,0)"}
-            backgroundColor={"rgba(0,0,0,0)"}
-          />
-        </View>
         <Text style={[Typography.h4]}>Your day so far</Text>
         <View style={{ marginHorizontal: 4, marginBottom: 24 }}>
           {tasksToday.length == 0 ? (
@@ -129,6 +171,12 @@ const Home = ({ navigation }: any) => {
           Shadowing.elevatedCard,
         ]}
       >
+        <IconButton
+          icon="md-menu"
+          text="Menu"
+          style={{ marginRight: "auto" }}
+          onPress={() => setMenuModalVisibility(true)}
+        />
         <IconButton
           icon="md-calendar"
           text="Tasks"
