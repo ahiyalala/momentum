@@ -163,7 +163,7 @@ export default class DatabaseAPI {
   };
 
   getSumOfElapsedPerDay = (callback: any) => {
-    const getTotalElapsed = `SELECT DATE(endTime) as x, elapsed as y FROM progress WHERE x BETWEEN datetime('now','-1 day','localtime', 'start of day') AND datetime('now','localtime', 'start of day') GROUP BY x`;
+    const getTotalElapsed = `SELECT DATE(endTime) as x, SUM(elapsed) as y FROM progress WHERE x BETWEEN datetime('now','-1 day','localtime', 'start of day') AND datetime('now','localtime', 'start of day') GROUP BY x LIMIT 1`;
     this.db.transaction((tx) => {
       tx.executeSql(
         getTotalElapsed,

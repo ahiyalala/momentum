@@ -118,7 +118,12 @@ export const Momentum = () => {
             onPress={() => submitTaskData()}
           />
         </View>
-        <View style={{ flex: 0.5 }}>
+        <View
+          style={{
+            flex: 0.5,
+            alignItems: "center",
+          }}
+        >
           <AdMobBanner
             bannerSize="largeBanner"
             adUnitID="ca-app-pub-3940256099942544/6300978111"

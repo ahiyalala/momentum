@@ -24,6 +24,7 @@ import { IconButton } from "../components/buttons";
 import { useFocusEffect } from "@react-navigation/native";
 import App from "../App";
 import { MenuItem } from "../components/menuItem";
+import { secondsToTime } from "../lib/helper";
 
 const Home = ({ navigation }: any) => {
   const [tasksToday, getTasks] = React.useState([] as TaskOverview[]);
@@ -31,7 +32,7 @@ const Home = ({ navigation }: any) => {
   const [tasksYesterday, getTasksFromYesterday] = React.useState(
     [] as TaskOverview[]
   );
-  const [graphData, getGraphData] = React.useState([] as GraphData[]);
+  const [elapsedCount, getGraphData] = React.useState(null as GraphData | null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -43,7 +44,7 @@ const Home = ({ navigation }: any) => {
         getTasksFromYesterday(res);
       });
       db.getSumOfElapsedPerDay((res: GraphData[]) => {
-        getGraphData(res);
+        getGraphData(res[0]);
       });
     }, [])
   );
@@ -64,6 +65,8 @@ const Home = ({ navigation }: any) => {
       ]
     );
   };
+
+  const elapsedString = secondsToTime(parseInt(elapsedCount?.y ?? "0"));
 
   return (
     <SafeAreaView style={[Layout.outerBox, { flex: 1, paddingBottom: 70 }]}>
@@ -114,7 +117,14 @@ const Home = ({ navigation }: any) => {
         }}
       >
         <Text style={[Typography.h1, { marginBottom: 32 }]}>Welcome!</Text>
-        <Text style={[Typography.h4]}>Your day so far</Text>
+        <Text style={[Typography.h4, { marginBottom: 16 }]}>
+          Your day so far
+        </Text>
+        <Text style={[Typography.h3, { marginBottom: 16 }]}>
+          {elapsedCount && parseInt(elapsedCount.y) > 0
+            ? `In total: ${elapsedString}`
+            : ""}
+        </Text>
         <View style={{ marginHorizontal: 4, marginBottom: 24 }}>
           {tasksToday.length == 0 ? (
             <Text

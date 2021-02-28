@@ -14,8 +14,25 @@ import { TaskOverview } from "../intrerfaces";
 import DatabaseAPI from "../lib/db";
 import { colorScheme, Typography } from "../styles.global";
 
+const generateTasks = (tasks: TaskOverview[], navigation: any) => {
+  return tasks.map((task, index) => {
+    return (
+      <Task
+        key={index}
+        id={task.taskId}
+        name={task.taskName}
+        description={task.taskDescription}
+        totalSeconds={task.totalElapsed}
+        lastUpdate={task.localstarttime}
+        onPress={() => navigation.navigate("TaskDetails", { task: task })}
+      />
+    );
+  });
+};
+
 export const TaskOverviewPage = () => {
   const [calendarModal, setCalendarModalVisiblity] = React.useState(false);
+  const navigation = useNavigation();
   const [selectedDate, setDate] = React.useState(null as Date | null);
 
   const [tasksToday, getTasks] = React.useState([] as TaskOverview[]);
@@ -95,7 +112,7 @@ export const TaskOverviewPage = () => {
       />
       <ScrollView style={{ flexGrow: 1 }}>
         {tasksToday.length > 0 ? (
-          generateTasks(tasksToday)
+          generateTasks(tasksToday, navigation)
         ) : (
           <Text style={[Typography.h4, { color: "#999", textAlign: "center" }]}>
             No tasks here :(
@@ -104,21 +121,4 @@ export const TaskOverviewPage = () => {
       </ScrollView>
     </View>
   );
-};
-
-const generateTasks = (tasks: TaskOverview[]) => {
-  const navigation = useNavigation();
-  return tasks.map((task, index) => {
-    return (
-      <Task
-        key={index}
-        id={task.taskId}
-        name={task.taskName}
-        description={task.taskDescription}
-        totalSeconds={task.totalElapsed}
-        lastUpdate={task.localstarttime}
-        onPress={() => navigation.navigate("TaskDetails", { task: task })}
-      />
-    );
-  });
 };
