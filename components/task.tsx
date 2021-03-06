@@ -5,7 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { ITask } from "../intrerfaces";
 import { Lato_400Regular } from "@expo-google-fonts/lato";
-import { Shadowing } from "../styles.global";
+import { colorScheme, Shadowing } from "../styles.global";
 import { pluralize, secondsToTime } from "../lib/helper";
 
 export const Task = (task: ITask) => {
@@ -30,7 +30,7 @@ export const Task = (task: ITask) => {
     >
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         <Text style={{ marginBottom: 8 }}>{name}</Text>
-        <Text style={{ height: 40 }}>
+        <Text style={[{ height: 40, color: "#C0C0C0" }]}>
           {description ? description : "No description available"}
         </Text>
         <Text style={{ fontSize: 12, color: "#91a3b0" }}>

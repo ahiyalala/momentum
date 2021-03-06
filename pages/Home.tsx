@@ -1,7 +1,6 @@
 import {
-  ActivityIndicator,
   Alert,
-  AppState,
+  Image,
   Linking,
   Modal,
   Platform,
@@ -85,21 +84,23 @@ const Home = ({ navigation }: any) => {
             <Ionicons name="md-close" color="#ccc" size={32} />
           </Pressable>
           <View style={{ marginBottom: 32 }}>
+            <Image
+              style={{ width: 40, height: 40, marginBottom: 16 }}
+              source={require("../assets/icon.png")}
+            />
             <Text style={[Typography.h2]}>Momentum</Text>
-            <Text style={[Typography.h4, colorScheme.disabled]}>v0.1.0</Text>
+            <Text style={[Typography.h4, colorScheme.disabled]}>v1.1.0</Text>
           </View>
           <View>
             <MenuItem
               onPress={() =>
-                openingUrl("https://chronolala.github.io/tymbox-static/")
+                openingUrl("https://chronolala.github.io/privacy-policy")
               }
               title="Privacy Notice"
             />
             <MenuItem
               onPress={() =>
-                openingUrl(
-                  "https://chronolala.github.io/tymbox-static/terms-and-condition"
-                )
+                openingUrl("https://chronolala.github.io/terms-and-condition")
               }
               title="Terms and Condition"
             />
@@ -120,11 +121,6 @@ const Home = ({ navigation }: any) => {
         <Text style={[Typography.h4, { marginBottom: 16 }]}>
           Your day so far
         </Text>
-        <Text style={[Typography.h3, { marginBottom: 16 }]}>
-          {elapsedCount && parseInt(elapsedCount.y) > 0
-            ? `In total: ${elapsedString}`
-            : ""}
-        </Text>
         <View style={{ marginHorizontal: 4, marginBottom: 24 }}>
           {tasksToday.length == 0 ? (
             <Text
@@ -136,7 +132,11 @@ const Home = ({ navigation }: any) => {
             >
               No tasks today
             </Text>
-          ) : null}
+          ) : (
+            <Text style={[{ marginBottom: 16, color: "black", fontSize: 20 }]}>
+              In total: {elapsedString}
+            </Text>
+          )}
           {tasksToday.map((task, index) => {
             return (
               <Task
@@ -153,15 +153,30 @@ const Home = ({ navigation }: any) => {
         </View>
         <Text style={[Typography.h4]}>What you did yesterday</Text>
         <View style={{ marginHorizontal: 4, marginBottom: 24 }}>
-          <Text
-            style={{
-              color: "#a2a2a2",
-              textAlign: "center",
-              marginVertical: 16,
-            }}
-          >
-            No tasks today
-          </Text>
+          {tasksYesterday.length == 0 ? (
+            <Text
+              style={{
+                color: "#a2a2a2",
+                textAlign: "center",
+                marginVertical: 16,
+              }}
+            >
+              No tasks yesterday
+            </Text>
+          ) : null}
+          {tasksYesterday.map((task, index) => {
+            return (
+              <Task
+                key={index}
+                id={task.taskId}
+                name={task.taskName}
+                totalSeconds={task.totalElapsed}
+                onPress={() =>
+                  navigation.navigate("TaskDetails", { task: task })
+                }
+              />
+            );
+          })}
         </View>
       </ScrollView>
       <View
